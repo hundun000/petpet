@@ -1,0 +1,16 @@
+{
+    "type": "IMG",
+    "avatar": [{
+        "type": "FROM",
+        "pos": [[0, 0],[0,230],[50,230],[50, 0],[103, 0]],
+        "posType": "DEFORM",
+        "round": false,
+        "avatarOnTop": true
+    }],
+    "text": [{
+        "text": "从充电口观看",
+        "pos": [60,236],
+        "color": "#000000",
+        "size": 20
+    }]
+}
