@@ -1,0 +1,75 @@
+{
+  "type": "IMG",
+  "initTask": {
+    "type": "CONTEXT_INIT",
+    "providerType": "FILE_BASE_IMAGE_PROVIDER",
+    "providerKey": "0.png",
+    "width": 100,
+    "height": 100,
+    "backgroundConfig": {
+      "transparent": false
+    }
+  },
+  "frameTasks": [{
+    "tasks": [{
+      "type": "DRAW_IMAGE",
+      "imageMetaDTO": {
+        "providerType": "FILE_BASE_IMAGE_PROVIDER",
+        "providerKey": "0.png",
+        "pos": {
+          "first": 0,
+          "second": 0
+        }
+      },
+      "imageModify": {
+        "round": true,
+        "angle": 30
+      }
+    },
+    {
+      "type": "DRAW_IMAGE",
+      "imageMetaDTO": {
+        "providerType": "FILE_BASE_IMAGE_PROVIDER",
+        "providerKey": "0.png",
+        "pos": {
+          "first": 50,
+          "second": 0
+        }
+      },
+      "imageModify": {
+        "round": true,
+        "angle": 60
+      }
+    },
+    {
+      "type": "DRAW_IMAGE",
+      "imageMetaDTO": {
+        "providerType": "FILE_BASE_IMAGE_PROVIDER",
+        "providerKey": "0.png",
+        "pos": {
+          "first": 0,
+          "second": 50
+        }
+      },
+      "imageModify": {
+        "round": false,
+        "angle": 30
+      }
+    },
+    {
+      "type": "DRAW_IMAGE",
+      "imageMetaDTO": {
+        "providerType": "FILE_BASE_IMAGE_PROVIDER",
+        "providerKey": "0.png",
+        "pos": {
+          "first": 50,
+          "second": 50
+        }
+      },
+      "imageModify": {
+        "round": false,
+        "angle": 60
+      }
+    }]
+  }]
+}

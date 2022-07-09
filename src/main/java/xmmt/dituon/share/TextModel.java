@@ -57,7 +57,7 @@ public class TextModel {
         short[] rgba = {25, 25, 25, 255};
         try { //rgb or rgba
             JsonArray jsonArray = (JsonArray) jsonElement;
-            if (jsonArray.getSize() == 3 && jsonArray.getSize() == 4) {
+            if (jsonArray.getSize() == 3 || jsonArray.getSize() == 4) {
                 rgba[0] = Short.parseShort(jsonArray.get(0).toString());
                 rgba[1] = Short.parseShort(jsonArray.get(1).toString());
                 rgba[2] = Short.parseShort(jsonArray.get(2).toString());

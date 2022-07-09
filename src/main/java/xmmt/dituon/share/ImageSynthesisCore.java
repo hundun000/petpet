@@ -11,7 +11,7 @@ import java.net.URL;
 
 public class ImageSynthesisCore {
     public static void g2dDrawZoomAvatar(Graphics2D g2d, BufferedImage avatarImage, int[] pos,
-                                         float angle, boolean isRound) {
+                                         float angle) {
         if (avatarImage == null) {
             return;
         }
@@ -20,23 +20,11 @@ public class ImageSynthesisCore {
         int y = pos[1];
         int w = pos[2];
         int h = pos[3];
-        if (angle == 0) {
-            g2d.drawImage(avatarImage, x, y, w, h, null);
-            return;
-        }
-
-        if (isRound || angle % 90 == 0) {
-            BufferedImage newAvatarImage = new BufferedImage(avatarImage.getWidth(), avatarImage.getHeight(), avatarImage.getType());
-            Graphics2D rotateG2d = newAvatarImage.createGraphics();
-            rotateG2d.rotate(Math.toRadians(angle), avatarImage.getWidth() / 2.0, avatarImage.getHeight() / 2.0);
-            rotateG2d.drawImage(avatarImage, null, 0, 0);
-            rotateG2d.dispose();
-            g2d.drawImage(newAvatarImage, x, y, w, h, null);
-            return;
-        }
 
         g2d.drawImage(rotateImage(avatarImage, angle), x, y, w, h, null);
     }
+
+
 
     public static void g2dDrawDeformAvatar(Graphics2D g2d, BufferedImage avatarImage, Point2D[] point, int[] anchorPos) {
         BufferedImage result = ImageDeformer.computeImage(avatarImage, point);
@@ -64,7 +52,28 @@ public class ImageSynthesisCore {
         return output;
     }
 
-    public static BufferedImage rotateImage(BufferedImage avatarImage, float angle) {
+    /**
+     * 旋转。实现里对于特殊角度有特殊处理分支。
+     */
+    public static BufferedImage rotateImage(BufferedImage originImage, float angle) {
+        if (angle == 0) {
+            return originImage;
+        } else if (angle % 90 == 0) {
+            BufferedImage newImage = new BufferedImage(originImage.getWidth(), originImage.getHeight(), originImage.getType());
+            Graphics2D rotateG2d = newImage.createGraphics();
+            rotateG2d.rotate(Math.toRadians(angle), originImage.getWidth() / 2.0, originImage.getHeight() / 2.0);
+            rotateG2d.drawImage(originImage, null, 0, 0);
+            rotateG2d.dispose();
+            return newImage;
+        } else {
+            return rotateNormalAngleImage(originImage, angle);
+        }
+    }
+
+    /**
+     * 旋转。实现里统一对待任意输入角度。
+     */
+    public static BufferedImage rotateNormalAngleImage(BufferedImage avatarImage, float angle) {
         double sin = Math.abs(Math.sin(Math.toRadians(angle))),
                 cos = Math.abs(Math.cos(Math.toRadians(angle)));
         int w = avatarImage.getWidth();

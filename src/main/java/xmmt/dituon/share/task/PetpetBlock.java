@@ -2,10 +2,14 @@ package xmmt.dituon.share.task;
 
 import lombok.*;
 import xmmt.dituon.share.Type;
+import xmmt.dituon.share.task.provider.IImageProvider;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 @Getter
 @AllArgsConstructor
@@ -13,25 +17,28 @@ import java.util.List;
 public class PetpetBlock {
 
     Type type;
-    ContextModifyTask initTask;
+    ContextInitTask initTask;
     List<FrameBlock> frameBlocks;
     PetpetBlockContext context;
 
-    public static class PetpetTaskFactory  {
-
-
-        public static PetpetBlock buildPetpetBlockFromDTO(PetpetBlockDTO dto) {
-
-            PetpetBlock petpetBlock = PetpetBlock.builder().build();
-            return petpetBlock;
-
-        }
-
-
-
-
+    @Setter
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class RuntimeContext {
+        Map<ImageProviderType, IImageProvider> imageProviderMap;
     }
 
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class ContextInitTask implements IDrawTask {
+        int width;
+        int height;
+        String providerKey;
+        ImageProviderType providerType;
+        BackgroundConfig backgroundConfig;
+    }
 
     @Setter
     @Getter
@@ -44,13 +51,13 @@ public class PetpetBlock {
         Color color;
         Font font;
 
-        DrawBackgroundTask backgroundTask;
+        BackgroundConfig backgroundConfig;
     }
 
     @Getter
     @AllArgsConstructor
     @Builder
-    public static class DrawBackgroundTask {
+    public static class BackgroundConfig {
         boolean transparent;
     }
 
@@ -72,26 +79,35 @@ public class PetpetBlock {
     public static class ContextModifyTask implements IDrawTask {
         Boolean antialias;
         Color color;
-        Font font;
+        String fontName;
+        Integer fontSize;
+        BackgroundConfig backgroundConfig;
     }
 
     @Getter
     @AllArgsConstructor
     @Builder
-    public static class DrawZoomImageTask implements IDrawTask {
-        BufferedImage image;
-        float angle;
-        boolean round;
+    public static class DrawImageTask implements IDrawTask {
+        ImageMeta imageMeta;
+        ImageModify imageModify;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class ImageMeta {
+        String providerKey;
+        ImageProviderType providerType;
         int[] anchorPos;
     }
 
     @Getter
     @AllArgsConstructor
     @Builder
-    public static class DrawDeformImageTask implements IDrawTask {
-        BufferedImage image;
+    public static class ImageModify {
+        Float angle;
+        Boolean round;
         List<int[]> vertexPosList;
-        int[] anchorPos;
     }
 
     @Getter
