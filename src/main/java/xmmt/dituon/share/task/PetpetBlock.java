@@ -21,14 +21,6 @@ public class PetpetBlock {
     List<FrameBlock> frameBlocks;
     PetpetBlockContext context;
 
-    @Setter
-    @Getter
-    @AllArgsConstructor
-    @Builder
-    public static class RuntimeContext {
-        Map<ImageProviderType, IImageProvider> imageProviderMap;
-    }
-
     @Getter
     @AllArgsConstructor
     @Builder
@@ -116,6 +108,5 @@ public class PetpetBlock {
     public static class DrawTextTask implements IDrawTask {
         String text;
         int[] anchorPos;
-
     }
 }

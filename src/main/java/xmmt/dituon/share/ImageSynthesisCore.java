@@ -11,7 +11,7 @@ import java.net.URL;
 
 public class ImageSynthesisCore {
     public static void g2dDrawZoomAvatar(Graphics2D g2d, BufferedImage avatarImage, int[] pos,
-                                         float angle) {
+                                         float angle, boolean antialias) {
         if (avatarImage == null) {
             return;
         }
@@ -21,7 +21,7 @@ public class ImageSynthesisCore {
         int w = pos[2];
         int h = pos[3];
 
-        g2d.drawImage(rotateImage(avatarImage, angle), x, y, w, h, null);
+        g2d.drawImage(rotateImage(avatarImage, angle, antialias), x, y, w, h, null);
     }
 
 
@@ -42,11 +42,9 @@ public class ImageSynthesisCore {
         Ellipse2D.Double shape = new Ellipse2D.Double(0, 0, input.getWidth(), input.getHeight());
         Graphics2D g2 = output.createGraphics();
         g2.setClip(shape);
-
         if (antialias) {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }
-
         g2.drawImage(input, 0, 0, null);
         g2.dispose();
         return output;
@@ -55,25 +53,25 @@ public class ImageSynthesisCore {
     /**
      * 旋转。实现里对于特殊角度有特殊处理分支。
      */
-    public static BufferedImage rotateImage(BufferedImage originImage, float angle) {
+    public static BufferedImage rotateImage(BufferedImage originImage, float angle, boolean antialias) {
         if (angle == 0) {
             return originImage;
-        } else if (angle % 90 == 0) {
+/*        } else if (angle % 90 == 0) {
             BufferedImage newImage = new BufferedImage(originImage.getWidth(), originImage.getHeight(), originImage.getType());
             Graphics2D rotateG2d = newImage.createGraphics();
             rotateG2d.rotate(Math.toRadians(angle), originImage.getWidth() / 2.0, originImage.getHeight() / 2.0);
             rotateG2d.drawImage(originImage, null, 0, 0);
             rotateG2d.dispose();
-            return newImage;
+            return newImage;*/
         } else {
-            return rotateNormalAngleImage(originImage, angle);
+            return rotateNormalAngleImage(originImage, angle, antialias);
         }
     }
 
     /**
      * 旋转。实现里统一对待任意输入角度。
      */
-    public static BufferedImage rotateNormalAngleImage(BufferedImage avatarImage, float angle) {
+    public static BufferedImage rotateNormalAngleImage(BufferedImage avatarImage, float angle, boolean antialias) {
         double sin = Math.abs(Math.sin(Math.toRadians(angle))),
                 cos = Math.abs(Math.cos(Math.toRadians(angle)));
         int w = avatarImage.getWidth();
@@ -82,10 +80,13 @@ public class ImageSynthesisCore {
                 newh = (int) Math.floor(h * cos + w * sin);
         BufferedImage rotated = new BufferedImage(neww, newh, avatarImage.getType());
         Graphics2D g2d = rotated.createGraphics();
-        rotated = g2d.getDeviceConfiguration().createCompatibleImage(
+        if (antialias) {
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
+/*        rotated = g2d.getDeviceConfiguration().createCompatibleImage(
                 rotated.getWidth(), rotated.getHeight(), Transparency.TRANSLUCENT);
         g2d.dispose();
-        g2d = rotated.createGraphics();
+        g2d = rotated.createGraphics();*/
 
         g2d.translate((neww - w) / 2, (newh - h) / 2);
         g2d.rotate(Math.toRadians(angle), w / 2.0, h / 2.0);

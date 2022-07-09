@@ -2,9 +2,9 @@ package xmmt.dituon.share.task.usage;
 
 import kotlin.Pair;
 import xmmt.dituon.share.task.*;
-import xmmt.dituon.share.task.PetpetBlock.RuntimeContext;
 import xmmt.dituon.share.task.provider.FileBaseImageProvider;
 import xmmt.dituon.share.task.provider.IImageProvider;
+import xmmt.dituon.share.task.provider.SimpleGeometricImageProvider;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -17,22 +17,23 @@ public class ExampleUsage {
 
     PetpetBlockHandler handler = new PetpetBlockHandler();
 
-    public void work() throws IOException, PetpetBlockException {
-        String blockPath = "./example-data/petpetBlock/PetpetBlockDTO.json";
-        String imageInputFolderPath = "./example-data/petpetBlock/input";
-        String imageOutputFilePathAndNameStart = "./example-data/petpetBlock/output.";
+    public void work(String folder) throws IOException, PetpetBlockException {
+        String blockPath = folder + "/PetpetBlockDTO.json";
+        String imageInputFolderPath = folder;
+        String imageOutputFilePathAndNameStart = folder + "/output.";
 
         PetpetBlockDTO dto = PetpetBlockDataKt.decodePetpetBlockDTO(getFileStr(new File(blockPath)));
         PetpetBlock petpetBlock = PetpetBlockFactory.buildPetpetBlockFromDTO(dto);
 
         Map<ImageProviderType, IImageProvider> imageProviderMap = new HashMap<>();
         imageProviderMap.put(ImageProviderType.FILE_BASE_IMAGE_PROVIDER, new FileBaseImageProvider(imageInputFolderPath));
+        imageProviderMap.put(ImageProviderType.SIMPLE_GEOMETRIC_IMAGE_PROVIDER, new SimpleGeometricImageProvider());
 
-        RuntimeContext runtimeContext = RuntimeContext.builder()
+        HandlerContext handlerContext = HandlerContext.builder()
                 .imageProviderMap(imageProviderMap)
                 .build();
 
-        Pair<InputStream, String> result = handler.handle(petpetBlock, runtimeContext);
+        Pair<InputStream, String> result = handler.handle(petpetBlock, handlerContext);
         copyInputStreamToFile(result.getFirst(), new File(imageOutputFilePathAndNameStart + result.getSecond()));
 
     }
@@ -62,13 +63,6 @@ public class ExampleUsage {
         }
     }
 
-    public static void main(String[] args) {
-        ExampleUsage exampleUsage = new ExampleUsage();
-        try {
-            exampleUsage.work();
-        } catch (IOException | PetpetBlockException e) {
-            e.printStackTrace();
-        }
-    }
+
 
 }

@@ -20,14 +20,14 @@ public class PetpetBlockHandler {
 
 
     private interface IDrawTaskHandler<T extends IDrawTask> {
-        void apply(RuntimeContext runtimeContext, Graphics2D g2d, PetpetBlockContext blockContext, T task) throws PetpetBlockException;
+        void apply(HandlerContext handlerContext, Graphics2D g2d, PetpetBlockContext blockContext, T task) throws PetpetBlockException;
     }
 
     private static class DrawImageHandler implements IDrawTaskHandler<DrawImageTask> {
         static DrawImageHandler INSTANCE = new DrawImageHandler();
         @Override
-        public void apply(RuntimeContext runtimeContext, Graphics2D g2d, PetpetBlockContext blockContext, DrawImageTask task) throws PetpetBlockException {
-            BufferedImage image = getImage(runtimeContext, task.getImageMeta().getProviderType(), task.getImageMeta().getProviderKey());
+        public void apply(HandlerContext handlerContext, Graphics2D g2d, PetpetBlockContext blockContext, DrawImageTask task) throws PetpetBlockException {
+            BufferedImage image = getImage(handlerContext, task.getImageMeta().getProviderType(), task.getImageMeta().getProviderKey());
             float angle = 0.0f;
             var imageModify = task.getImageModify();
             if (imageModify != null) {
@@ -57,14 +57,14 @@ public class PetpetBlockHandler {
             anchorAndWH[1] = task.getImageMeta().getAnchorPos()[1];
             anchorAndWH[2] = image.getWidth();
             anchorAndWH[3] = image.getHeight();
-            ImageSynthesis.g2dDrawZoomAvatar(g2d, image, anchorAndWH, angle);
+            ImageSynthesis.g2dDrawZoomAvatar(g2d, image, anchorAndWH, angle, blockContext.isAntialias());
         }
 
     }
 
 
-    private static BufferedImage getImage(RuntimeContext runtimeContext, ImageProviderType providerType, String key) throws PetpetBlockException {
-        IImageProvider provider = runtimeContext.getImageProviderMap().get(providerType);
+    private static BufferedImage getImage(HandlerContext handlerContext, ImageProviderType providerType, String key) throws PetpetBlockException {
+        IImageProvider provider = handlerContext.getImageProviderMap().get(providerType);
         if (provider != null) {
             return provider.apply(key);
         } else {
@@ -77,7 +77,7 @@ public class PetpetBlockHandler {
         static DrawTextHandler INSTANCE = new DrawTextHandler();
 
         @Override
-        public void apply(RuntimeContext runtimeContext, Graphics2D g2d, PetpetBlockContext blockContext, DrawTextTask task) {
+        public void apply(HandlerContext handlerContext, Graphics2D g2d, PetpetBlockContext blockContext, DrawTextTask task) {
             ImageSynthesis.g2dDrawText(g2d, task.getText(), task.getAnchorPos(), blockContext.getColor(), blockContext.getFont());
         }
     }
@@ -86,7 +86,7 @@ public class PetpetBlockHandler {
         static ContextModifyHandler INSTANCE = new ContextModifyHandler();
 
         @Override
-        public void apply(RuntimeContext runtimeContext, Graphics2D g2d, PetpetBlockContext blockContext, ContextModifyTask task) {
+        public void apply(HandlerContext handlerContext, Graphics2D g2d, PetpetBlockContext blockContext, ContextModifyTask task) {
             if (task.getAntialias() != null) {
                 blockContext.setAntialias(task.getAntialias());
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -96,8 +96,8 @@ public class PetpetBlockHandler {
                 blockContext.setColor(task.getColor());
             }
             if (task.getFontName() != null || task.getFontSize() != null ) {
-                String newName = Objects.requireNonNullElse(task.getFontName(), blockContext.getFont().getName());
-                Integer newSize = Objects.requireNonNullElse(task.getFontSize(), blockContext.getFont().getSize());
+                String newName = Objects.requireNonNullElseGet(task.getFontName(), () -> blockContext.getFont().getName());
+                Integer newSize = Objects.requireNonNullElseGet(task.getFontSize(), () -> blockContext.getFont().getSize());
                 blockContext.setFont(new Font(newName, Font.PLAIN, newSize));
             }
         }
@@ -107,8 +107,8 @@ public class PetpetBlockHandler {
         static ContextInitHandler INSTANCE = new ContextInitHandler();
 
         @Override
-        public void apply(RuntimeContext runtimeContext, Graphics2D g2d, PetpetBlockContext blockContext, ContextInitTask task) throws PetpetBlockException {
-            BufferedImage image = getImage(runtimeContext, task.getProviderType(), task.getProviderKey());
+        public void apply(HandlerContext handlerContext, Graphics2D g2d, PetpetBlockContext blockContext, ContextInitTask task) throws PetpetBlockException {
+            BufferedImage image = getImage(handlerContext, task.getProviderType(), task.getProviderKey());
             blockContext.setHeight(task.getHeight());
             blockContext.setWidth(task.getWidth());
             blockContext.setImageType(image.getType());
@@ -116,14 +116,14 @@ public class PetpetBlockHandler {
         }
     }
 
-    public Pair<InputStream, String> handle(PetpetBlock petpetBlock, RuntimeContext runtimeContext) throws PetpetBlockException {
+    public Pair<InputStream, String> handle(PetpetBlock petpetBlock, HandlerContext handlerContext) throws PetpetBlockException {
 
-        ContextInitHandler.INSTANCE.apply(runtimeContext, null, petpetBlock.getContext(), petpetBlock.getInitTask());
+        ContextInitHandler.INSTANCE.apply(handlerContext, null, petpetBlock.getContext(), petpetBlock.getInitTask());
 
         if (petpetBlock.getType() == Type.GIF) {
-            return new Pair<>(makeGIF(runtimeContext, petpetBlock), "gif");
+            return new Pair<>(makeGIF(handlerContext, petpetBlock), "gif");
         } else {
-            BufferedImage frameImage = drawOneFrame(runtimeContext, petpetBlock.getContext(), petpetBlock.frameBlocks.get(0));
+            BufferedImage frameImage = drawOneFrame(handlerContext, petpetBlock.getContext(), petpetBlock.frameBlocks.get(0));
             try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                 ImageIO.write(frameImage, "png", os);
                 return new Pair<>(new ByteArrayInputStream(os.toByteArray()), "png");
@@ -134,12 +134,12 @@ public class PetpetBlockHandler {
         }
     }
 
-    private InputStream makeGIF(RuntimeContext runtimeContext, PetpetBlock petpetBlock) throws PetpetBlockException {
+    private InputStream makeGIF(HandlerContext handlerContext, PetpetBlock petpetBlock) throws PetpetBlockException {
         try {
             GifBuilder gifBuilder = new GifBuilder(petpetBlock.getContext().getImageType(), 65, true);
 
             for (FrameBlock frameBlock : petpetBlock.getFrameBlocks()) {
-                BufferedImage frameImage = drawOneFrame(runtimeContext, petpetBlock.getContext(), frameBlock);
+                BufferedImage frameImage = drawOneFrame(handlerContext, petpetBlock.getContext(), frameBlock);
                 gifBuilder.writeToSequence(frameImage);
             }
 
@@ -152,7 +152,7 @@ public class PetpetBlockHandler {
     }
 
 
-    private BufferedImage drawOneFrame(RuntimeContext runtimeContext, PetpetBlockContext blockContext, FrameBlock frameBlock) throws PetpetBlockException {
+    private BufferedImage drawOneFrame(HandlerContext handlerContext, PetpetBlockContext blockContext, FrameBlock frameBlock) throws PetpetBlockException {
         BufferedImage output = new BufferedImage(blockContext.getWidth(), blockContext.getHeight(), blockContext.getImageType());
         Graphics2D g2d = output.createGraphics();
 
@@ -172,13 +172,13 @@ public class PetpetBlockHandler {
         for (IDrawTask imageTask : frameBlock.getTasks()) {
             if (imageTask instanceof DrawImageTask) {
                 var implTask = (DrawImageTask)imageTask;
-                DrawImageHandler.INSTANCE.apply(runtimeContext, g2d, blockContext, implTask);
+                DrawImageHandler.INSTANCE.apply(handlerContext, g2d, blockContext, implTask);
             } else if (imageTask instanceof DrawTextTask) {
                 var implTask = (DrawTextTask)imageTask;
-                DrawTextHandler.INSTANCE.apply(runtimeContext, g2d, blockContext, implTask);
+                DrawTextHandler.INSTANCE.apply(handlerContext, g2d, blockContext, implTask);
             } else if (imageTask instanceof ContextModifyTask) {
                 var implTask = (ContextModifyTask)imageTask;
-                ContextModifyHandler.INSTANCE.apply(runtimeContext, g2d, blockContext, implTask);
+                ContextModifyHandler.INSTANCE.apply(handlerContext, g2d, blockContext, implTask);
             }
         }
 

@@ -1,6 +1,7 @@
 package xmmt.dituon.share.task;
 
 import xmmt.dituon.share.task.PetpetBlock.ImageMeta;
+import xmmt.dituon.share.task.provider.SimpleGeometricImageProvider;
 
 import java.io.IOException;
 
@@ -14,10 +15,18 @@ public class PetpetBlockException extends Exception {
     }
 
     public static PetpetBlockException fromIOException(IOException e) {
-        return new PetpetBlockException(String.format("PetpetBlock执行期间发生IOException：", e.getMessage()));
+        return new PetpetBlockException(String.format("PetpetBlock执行期间发生IOException：%s", e.getMessage()));
     }
 
     public static PetpetBlockException fromImageSupplierNotFound(ImageProviderType providerType, String key) {
         return new PetpetBlockException(String.format("未找到 providerType = %s 的ImageSupplier for key = %s", providerType, key));
+    }
+
+    public static PetpetBlockException fromImageProvider(SimpleGeometricImageProvider provider, String key, Exception e) {
+        return new PetpetBlockException(String.format("ImageProvider %s 处理key=“%s”时，发生Exception：%s", provider.getClass().getName(), key, e.getMessage()));
+    }
+
+    public static PetpetBlockException fromImageProvider(SimpleGeometricImageProvider provider, String key) {
+        return new PetpetBlockException(String.format("ImageProvider %s 处理key=“%s”时，无法处理", provider.getClass().getName(), key));
     }
 }

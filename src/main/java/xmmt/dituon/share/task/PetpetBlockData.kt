@@ -6,8 +6,6 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import xmmt.dituon.share.Type
-import xmmt.dituon.share.task.ImageProviderType.SIMPLE_GEOMETRIC_IMAGE_PROVIDER
-import java.awt.image.BufferedImage
 
 fun decodePetpetBlockDTO(text: String): PetpetBlockDTO {
     return Json.decodeFromString(text);
@@ -77,14 +75,27 @@ data class DrawImageTaskDTO constructor(
 data class ImageModifyDTO constructor(
     val angle: Float? = null,
     val round: Boolean? = null,
-    val vertexPosList: List<Pair<Int, Int>>? = null
+    val vertexPosList: List<Pos>? = null
 )
+
+@Serializable
+data class Pos constructor(
+    val x: Int,
+    val y: Int
+)
+
+@Serializable
+data class DrawTextTaskDTO constructor(
+    override val type: DrawTaskType,
+    val text: String,
+    val pos: Pos
+): DrawTaskDTO()
 
 @Serializable
 data class ImageMetaDTO constructor(
     val providerType: ImageProviderType,
     val providerKey: String,
-    val pos: Pair<Int, Int>,
+    val pos: Pos,
 )
 
 @Serializable
@@ -98,6 +109,7 @@ object DrawTaskDTOSerializer : JsonContentPolymorphicSerializer<DrawTaskDTO>(Dra
         return when {
             type.equals(DrawTaskType.CONTEXT_MODIFY.name) -> ContextModifyTaskDTO.serializer()
             type.equals(DrawTaskType.DRAW_IMAGE.name) -> DrawImageTaskDTO.serializer()
+            type.equals(DrawTaskType.DRAW_TEXT.name) -> DrawTextTaskDTO.serializer()
             else -> EmptyTaskDTO.serializer()
         }
     }
@@ -117,17 +129,28 @@ fun main() {
         frameTasks = listOf(
             FrameBlockDTO(
                 listOf(
-                    ContextModifyTaskDTO(DrawTaskType.CONTEXT_MODIFY, fontSize = 12),
+                    ContextModifyTaskDTO(
+                        DrawTaskType.CONTEXT_MODIFY,
+                        fontSize = 12,
+                        fontName = "黑体",
+                        antialias = true,
+                        colorHex = "#FFFFFF"
+                    ),
                     DrawImageTaskDTO(
                         DrawTaskType.DRAW_IMAGE,
                         imageMetaDTO = ImageMetaDTO(
                             providerType = ImageProviderType.FILE_BASE_IMAGE_PROVIDER,
                             providerKey = "0.png",
-                            pos = Pair(50, 50)
+                            pos = Pos(50, 50)
                         ),
                         imageModify = ImageModifyDTO(
                             round = true
                         )
+                    ),
+                    DrawTextTaskDTO(
+                        DrawTaskType.DRAW_TEXT,
+                        text = "你好世界",
+                        pos = Pos(50, 50)
                     )
                 )
             )

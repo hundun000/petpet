@@ -12,64 +12,74 @@
   },
   "frameTasks": [{
     "tasks": [{
+      "type":"CONTEXT_MODIFY",
+      "antialias":true,
+      "colorHex":"#000000",
+      "fontName": "黑体",
+      "fontSize": 16
+    }, {
       "type": "DRAW_IMAGE",
       "imageMetaDTO": {
         "providerType": "FILE_BASE_IMAGE_PROVIDER",
         "providerKey": "0.png",
         "pos": {
-          "first": 0,
-          "second": 0
+          "x": 0,
+          "y": 0
         }
       },
       "imageModify": {
         "round": true,
-        "angle": 30
+        "angle": 0
       }
-    },
-    {
+    }, {
       "type": "DRAW_IMAGE",
       "imageMetaDTO": {
         "providerType": "FILE_BASE_IMAGE_PROVIDER",
         "providerKey": "0.png",
         "pos": {
-          "first": 50,
-          "second": 0
+          "x": 50,
+          "y": 0
         }
       },
       "imageModify": {
         "round": true,
         "angle": 60
       }
-    },
-    {
+    }, {
       "type": "DRAW_IMAGE",
       "imageMetaDTO": {
         "providerType": "FILE_BASE_IMAGE_PROVIDER",
         "providerKey": "0.png",
         "pos": {
-          "first": 0,
-          "second": 50
+          "x": 0,
+          "y": 50
         }
       },
       "imageModify": {
         "round": false,
         "angle": 30
       }
-    },
-    {
+    }, {
       "type": "DRAW_IMAGE",
       "imageMetaDTO": {
-        "providerType": "FILE_BASE_IMAGE_PROVIDER",
-        "providerKey": "0.png",
+        "providerType": "SIMPLE_GEOMETRIC_IMAGE_PROVIDER",
+        "providerKey": "矩形 30,30 上下渐变,255,0,0,255,0,255,0,0",
         "pos": {
-          "first": 50,
-          "second": 50
+          "x": 50,
+          "y": 50
         }
       },
       "imageModify": {
         "round": false,
         "angle": 60
       }
-    }]
+    }, {
+        "type": "DRAW_TEXT",
+        "text": "你好世界",
+        "pos": {
+          "x": 0,
+          "y": 50
+        }
+      }]
   }]
 }

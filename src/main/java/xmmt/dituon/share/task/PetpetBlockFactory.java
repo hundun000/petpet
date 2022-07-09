@@ -54,8 +54,18 @@ public class PetpetBlockFactory {
         } else if (dto instanceof DrawImageTaskDTO) {
             var implDto = (DrawImageTaskDTO)dto;
             return buildDrawImageTaskFromDTO(implDto);
+        } else if (dto instanceof DrawTextTaskDTO) {
+            var implDto = (DrawTextTaskDTO)dto;
+            return buildDrawTextTaskFromDTO(implDto);
         }
         throw new IllegalArgumentException("无法buildDrawTaskFromDTO for " + dto);
+    }
+
+    private static DrawTextTask buildDrawTextTaskFromDTO(DrawTextTaskDTO dto) {
+        return DrawTextTask.builder()
+                .text(dto.getText())
+                .anchorPos(new int[]{dto.getPos().getX(), dto.getPos().getY()})
+                .build();
     }
 
 
@@ -76,7 +86,7 @@ public class PetpetBlockFactory {
         return ImageMeta.builder()
                 .providerType(dto.getProviderType())
                 .providerKey(dto.getProviderKey())
-                .anchorPos(new int[]{dto.getPos().getFirst(), dto.getPos().getSecond()})
+                .anchorPos(new int[]{dto.getPos().getX(), dto.getPos().getY()})
                 .build();
     }
 
@@ -88,7 +98,7 @@ public class PetpetBlockFactory {
                 .angle(dto.getAngle())
                 .round(dto.getRound())
                 .vertexPosList(dto.getVertexPosList() == null ? null : dto.getVertexPosList().stream()
-                        .map(pair -> new int[]{pair.getFirst(), pair.getSecond()})
+                        .map(pair -> new int[]{pair.getX(), pair.getY()})
                         .collect(Collectors.toList())
                 )
                 .build();
