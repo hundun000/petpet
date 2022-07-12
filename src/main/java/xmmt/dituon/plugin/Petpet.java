@@ -19,17 +19,17 @@ import java.util.Random;
 
 public final class Petpet extends JavaPlugin {
     public static final Petpet INSTANCE = new Petpet();
-    public static final float VERSION = 3.4F;
+    public static final float VERSION = 3.5F;
 
     ArrayList<Group> disabledGroup = new ArrayList<>();
-    PluginPetService pluginPetService;
+    public static PluginPetService pluginPetService;
 
     private Petpet() {
         super(new JvmPluginDescriptionBuilder("xmmt.dituon.petpet", String.valueOf(VERSION))
                 .name("PetPet")
                 .author("Dituon")
                 .build());
-        this.pluginPetService = new PluginPetService();
+        pluginPetService = new PluginPetService();
     }
 
     @Override
@@ -37,18 +37,18 @@ public final class Petpet extends JavaPlugin {
         try {
             this.reloadPluginConfig(PetPetAutoSaveConfig.INSTANCE);
             pluginPetService.readConfigByPluginAutoSave();
-        } catch (Exception ignored) {
+        } catch (NoClassDefFoundError ignored) {
             getLogger().error("Mirai 2.11.0 提供了新的 JavaAutoSaveConfig 方法, 请更新Mirai版本至 2.11.0 (不是2.11.0-M1)\n使用旧版本将无法配置config");
         }
 
         pluginPetService.readData(getDataFolder());
 
-        if (pluginPetService.headless) {
-            System.setProperty("java.awt.headless", "true");
-        }
+        if (pluginPetService.headless) System.setProperty("java.awt.headless", "true");
+        if (pluginPetService.autoUpdate) DataUpdater.autoUpdate();
 
-        getLogger().info("\n____ ____ ____ ____ ____ ____ \n| . \\| __\\|_ _\\| . \\| __\\|_ _\\\n" +
-                "| __/|  ]_  || | __/|  ]_  || \n|/   |___/  |/ |/   |___/  |/ ");
+        getLogger().info("\n             _                _   \n  _ __   ___| |_   _ __   ___| |_ \n" +
+                " | '_ \\ / _ \\ __| | '_ \\ / _ \\ __|\n | |_) |  __/ |_  | |_) |  __/ |_ \n" +
+                " | .__/ \\___|\\__| | .__/ \\___|\\__|\n |_|              |_|             ");
 
         GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, this::onGroupMessage);
         GlobalEventChannel.INSTANCE.subscribeAlways(NudgeEvent.class, this::onNudge);
@@ -115,7 +115,7 @@ public final class Petpet extends JavaPlugin {
                 fromUrl = e.getSender().getAvatarUrl();
 
                 Member to = e.getGroup().get(((At) singleMessage).getTarget());
-                toName = "".equals(to.getNameCard()) ? to.getNick() : to.getNameCard();
+                toName = getNameOrNick(to);
                 toUrl = to.getAvatarUrl();
 
                 groupName = e.getGroup().getName();
@@ -138,11 +138,26 @@ public final class Petpet extends JavaPlugin {
                     new Random().nextInt(pluginPetService.randomableList.size())));
         }
 
+        if (!strList.get(0).startsWith(pluginPetService.keyCommandHead)) {
+            return;
+        }
+        strList.set(0, strList.get(0).substring(pluginPetService.keyCommandHead.length()));
+
         if (!pluginPetService.getDataMap().containsKey(strList.get(0))) { //没有指定key
             if (pluginPetService.getAliaMap().containsKey(strList.get(0))) { //别名
                 strList.set(0, pluginPetService.getAliaMap().get(strList.get(0)));
             } else {
                 return;
+            }
+        }
+
+        if (pluginPetService.fuzzy && strList.size() > 1) {
+            for (Member m : e.getGroup().getMembers()) {
+                if (m.getNameCard().contains(strList.get(1)) || m.getNick().contains(strList.get(1))) {
+                    toName = getNameOrNick(m);
+                    toUrl = m.getAvatarUrl();
+                    fromUrl = e.getSender().getAvatarUrl();
+                }
             }
         }
 
@@ -159,6 +174,10 @@ public final class Petpet extends JavaPlugin {
             return disabledGroup.contains(group);
         }
         return false;
+    }
+
+    private String getNameOrNick(Member m) {
+        return "".equals(m.getNameCard()) ? m.getNick() : m.getNameCard();
     }
 
     public boolean isPermission(GroupMessageEvent e) {
