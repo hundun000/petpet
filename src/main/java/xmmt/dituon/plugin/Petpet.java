@@ -19,7 +19,7 @@ import java.util.Random;
 
 public final class Petpet extends JavaPlugin {
     public static final Petpet INSTANCE = new Petpet();
-    public static final float VERSION = 3.5F;
+    public static final float VERSION = 3.6F;
 
     ArrayList<Group> disabledGroup = new ArrayList<>();
     public static PluginPetService pluginPetService;
@@ -48,7 +48,7 @@ public final class Petpet extends JavaPlugin {
 
         getLogger().info("\n             _                _   \n  _ __   ___| |_   _ __   ___| |_ \n" +
                 " | '_ \\ / _ \\ __| | '_ \\ / _ \\ __|\n | |_) |  __/ |_  | |_) |  __/ |_ \n" +
-                " | .__/ \\___|\\__| | .__/ \\___|\\__|\n |_|              |_|             ");
+                " | .__/ \\___|\\__| | .__/ \\___|\\__|\n |_|              |_|             \n");
 
         GlobalEventChannel.INSTANCE.subscribeAlways(GroupMessageEvent.class, this::onGroupMessage);
         GlobalEventChannel.INSTANCE.subscribeAlways(NudgeEvent.class, this::onNudge);
@@ -97,6 +97,7 @@ public final class Petpet extends JavaPlugin {
             e.getGroup().sendMessage("Petpet KeyList: \n" + pluginPetService.getKeyAliasListString());
             return;
         }
+        boolean lock = false;
 
         String fromName = "我";
         String toName = "你";
@@ -119,12 +120,14 @@ public final class Petpet extends JavaPlugin {
                 toUrl = to.getAvatarUrl();
 
                 groupName = e.getGroup().getName();
+                lock = true;
                 continue;
             }
             if (singleMessage instanceof Image) {
                 fromUrl = e.getSender().getAvatarUrl();
                 toUrl = Image.queryUrl((Image) singleMessage);
                 groupName = e.getGroup().getName();
+                lock = true;
             }
         }
 
@@ -138,9 +141,7 @@ public final class Petpet extends JavaPlugin {
                     new Random().nextInt(pluginPetService.randomableList.size())));
         }
 
-        if (!strList.get(0).startsWith(pluginPetService.keyCommandHead)) {
-            return;
-        }
+        if (!strList.get(0).startsWith(pluginPetService.keyCommandHead)) return;
         strList.set(0, strList.get(0).substring(pluginPetService.keyCommandHead.length()));
 
         if (!pluginPetService.getDataMap().containsKey(strList.get(0))) { //没有指定key
@@ -151,7 +152,7 @@ public final class Petpet extends JavaPlugin {
             }
         }
 
-        if (pluginPetService.fuzzy && strList.size() > 1) {
+        if (pluginPetService.fuzzy && strList.size() > 1 && !lock) {
             for (Member m : e.getGroup().getMembers()) {
                 if (m.getNameCard().contains(strList.get(1)) || m.getNick().contains(strList.get(1))) {
                     toName = getNameOrNick(m);
